@@ -1,18 +1,66 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Chemical Solution Calculator</title>
   <style>
-    body { font-family: Arial, sans-serif; padding: 20px; background: #f5f5f5; }
-    .container { background: white; padding: 20px; border-radius: 10px; max-width: 600px; margin: auto; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
-    h2 { margin-top: 0; }
-    .section { margin-bottom: 20px; }
-    label, select, input { display: block; width: 100%; margin-bottom: 10px; }
-    button { padding: 10px 15px; font-size: 16px; background: #007BFF; color: white; border: none; border-radius: 5px; cursor: pointer; }
-    button:hover { background: #0056b3; }
-    .result { margin-top: 15px; font-weight: bold; }
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #d0e6f6, #ffffff);
+      margin: 0;
+      padding: 0;
+    }
+    .container {
+      max-width: 600px;
+      background: #ffffff;
+      margin: 50px auto;
+      padding: 30px;
+      border-radius: 16px;
+      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+    }
+    h2 {
+      text-align: center;
+      margin-bottom: 24px;
+      color: #004080;
+    }
+    label {
+      margin-top: 10px;
+      font-weight: 600;
+      color: #333;
+    }
+    select, input[type="number"] {
+      width: 100%;
+      padding: 10px;
+      margin-top: 5px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      margin-bottom: 15px;
+    }
+    button {
+      width: 100%;
+      padding: 12px;
+      background: #007BFF;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 16px;
+      cursor: pointer;
+      transition: background 0.3s ease;
+    }
+    button:hover {
+      background: #0056b3;
+    }
+    .result {
+      margin-top: 20px;
+      font-size: 18px;
+      font-weight: bold;
+      color: #004d00;
+      text-align: center;
+    }
+    .section {
+      margin-bottom: 30px;
+    }
   </style>
 </head>
 <body>
@@ -28,36 +76,40 @@
 
     <div id="solid-form" class="section">
       <label for="typeSolid">Type:</label>
-      <select id="typeSolid">
+      <select id="typeSolid" onchange="toggleEqFactor('solid')">
         <option value="mol">Molarity</option>
         <option value="eq">Normality</option>
       </select>
       <label>Molecular Weight (g/mol):</label>
-      <input type="number" id="mw">
-      <div id="eqFactorGroup">
+      <input type="number" id="mw" />
+      <div id="eqFactorGroupSolid" style="display:none;">
         <label>Equivalence Factor:</label>
-        <input type="number" id="eqFactor" value="1">
+        <input type="number" id="eqFactorSolid" value="1" />
       </div>
       <label>Concentration (mol/L or eq/L):</label>
-      <input type="number" id="concentrationSolid">
+      <input type="number" id="concentrationSolid" />
       <label>Volume Required (in mL):</label>
-      <input type="number" id="volumeSolid">
+      <input type="number" id="volumeSolid" />
       <button onclick="calculateSolid()">Calculate</button>
       <div class="result" id="resultSolid"></div>
     </div>
 
     <div id="liquid-form" class="section" style="display:none;">
       <label for="typeLiquid">Type:</label>
-      <select id="typeLiquid">
+      <select id="typeLiquid" onchange="toggleEqFactor('liquid')">
         <option value="mol">Molarity</option>
         <option value="eq">Normality</option>
       </select>
+      <div id="eqFactorGroupLiquid" style="display:none;">
+        <label>Equivalence Factor:</label>
+        <input type="number" id="eqFactorLiquid" value="1" />
+      </div>
       <label>Stock Concentration (mol/L or eq/L):</label>
-      <input type="number" id="stockConcentration">
+      <input type="number" id="stockConcentration" />
       <label>Required Concentration (mol/L or eq/L):</label>
-      <input type="number" id="requiredConcentration">
+      <input type="number" id="requiredConcentration" />
       <label>Final Volume Required (in mL):</label>
-      <input type="number" id="finalVolume">
+      <input type="number" id="finalVolume" />
       <button onclick="calculateLiquid()">Calculate</button>
       <div class="result" id="resultLiquid"></div>
     </div>
@@ -70,17 +122,26 @@
       document.getElementById("liquid-form").style.display = mode === "liquid" ? "block" : "none";
     }
 
-    document.getElementById("typeSolid").addEventListener("change", () => {
-      const isNormality = document.getElementById("typeSolid").value === "eq";
-      document.getElementById("eqFactorGroup").style.display = isNormality ? "block" : "none";
-    });
+    function toggleEqFactor(section) {
+      if (section === "solid") {
+        const isNormality = document.getElementById("typeSolid").value === "eq";
+        document.getElementById("eqFactorGroupSolid").style.display = isNormality ? "block" : "none";
+      } else if (section === "liquid") {
+        const isNormality = document.getElementById("typeLiquid").value === "eq";
+        document.getElementById("eqFactorGroupLiquid").style.display = isNormality ? "block" : "none";
+      }
+    }
 
     function calculateSolid() {
       const mw = parseFloat(document.getElementById("mw").value);
       const conc = parseFloat(document.getElementById("concentrationSolid").value);
       const volML = parseFloat(document.getElementById("volumeSolid").value);
       const type = document.getElementById("typeSolid").value;
-      const eqFactor = parseFloat(document.getElementById("eqFactor").value) || 1;
+      let eqFactor = 1;
+
+      if (type === "eq") {
+        eqFactor = parseFloat(document.getElementById("eqFactorSolid").value) || 1;
+      }
 
       const volL = volML / 1000.0;
       let grams = mw * conc * volL;
@@ -93,8 +154,17 @@
       const C1 = parseFloat(document.getElementById("stockConcentration").value);
       const C2 = parseFloat(document.getElementById("requiredConcentration").value);
       const V2 = parseFloat(document.getElementById("finalVolume").value);
+      const type = document.getElementById("typeLiquid").value;
 
-      const V1 = (C2 * V2) / C1;
+      let eqFactor = 1;
+      if (type === "eq") {
+        eqFactor = parseFloat(document.getElementById("eqFactorLiquid").value) || 1;
+      }
+
+      const adjustedC1 = C1 * eqFactor;
+      const adjustedC2 = C2 * eqFactor;
+
+      const V1 = (adjustedC2 * V2) / adjustedC1;
       document.getElementById("resultLiquid").innerText = `Use ${V1.toFixed(2)} mL of the stock solution and dilute to ${V2.toFixed(2)} mL.`;
     }
   </script>
