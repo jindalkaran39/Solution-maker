@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Chemical Solution Calculator</title>
+  <title>Solution Calculator</title>
   <style>
     body {
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -61,11 +61,31 @@
     .section {
       margin-bottom: 30px;
     }
-  </style>
+  
+    .dark-mode {
+      background: #1e1e1e;
+      color: #f0f0f0;
+    }
+    .dark-mode .container {
+      background: #2b2b2b;
+      box-shadow: 0 0 20px rgba(255, 255, 255, 0.1);
+    }
+    .dark-mode input, .dark-mode select {
+      background-color: #3b3b3b;
+      color: #f0f0f0;
+      border: 1px solid #555;
+    }
+    .dark-mode button {
+      background: #0056b3;
+    }
+    .dark-mode .result {
+      color: #90ee90;
+    }
+</style>
 </head>
 <body>
   <div class="container">
-    <h2>Chemical Solution Calculator</h2>
+    <h2>Solution Calculator</h2><button onclick="toggleDarkMode()" style="margin-bottom: 20px;">Toggle Dark Mode</button>
     <div class="section">
       <label for="mode">Choose Mode:</label>
       <select id="mode" onchange="toggleMode()">
@@ -115,6 +135,8 @@
     </div>
   </div>
 
+  <div style="text-align:center; margin-top: 40px; font-size: 14px; color: #888;">&copy; by Karan</div>
+
   <script>
     function toggleMode() {
       const mode = document.getElementById("mode").value;
@@ -159,6 +181,8 @@
       let eqFactor = 1;
       if (type === "eq") {
         eqFactor = parseFloat(document.getElementById("eqFactorLiquid").value) || 1;
+      } else {
+        document.getElementById("eqFactorGroupLiquid").style.display = "none";
       }
 
       const adjustedC1 = C1 * eqFactor;
@@ -167,6 +191,12 @@
       const V1 = (adjustedC2 * V2) / adjustedC1;
       document.getElementById("resultLiquid").innerText = `Use ${V1.toFixed(2)} mL of the stock solution and dilute to ${V2.toFixed(2)} mL.`;
     }
-  </script>
+  
+    function toggleDarkMode() {
+      const body = document.body;
+      body.classList.toggle("dark-mode");
+    }
+
+</script>
 </body>
 </html>
