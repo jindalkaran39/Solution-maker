@@ -93,27 +93,6 @@
     <div class="result" id="result"></div>
   </div>
 
-  <div class="container" style="max-width: 600px; margin: 20px auto;">
-    <h3 style="text-align: center; color: #004080;">Examples / How to Use</h3>
-    <p><strong>For example:</strong> To make 100 mL of <strong>M/10</strong> NaOH solution</p>
-    <ul>
-      <li>Select <strong>Molarity</strong></li>
-      <li>Enter <strong>40</strong> as Molecular Weight</li>
-      <li>Enter <strong>0.1</strong> for Concentration <em>(M/10 = 0.1 M)</em></li>
-      <li>Enter <strong>100</strong> for Volume (in mL)</li>
-    </ul>
-    <p><strong>For example:</strong> To make 250 mL of <strong>N/10</strong> H₂SO₄ from 35N stock</p>
-    <ul>
-      <li>Select <strong>Normality</strong></li>
-      <li>Enter <strong>1</strong> as Equivalence Factor</li>
-      <li>Enter <strong>35</strong> for Stock Concentration</li>
-      <li>Enter <strong>0.1</strong> for Required Concentration <em>(N/10 = 0.1 N)</em></li>
-      <li>Enter <strong>250</strong> for Final Volume (in mL)</li>
-    </ul>
-  </div>
-
-  <div style="text-align:center; margin-top: 40px; font-size: 14px; color: #888;">&copy; by Karan</div>
-
   <script>
     function toggleDarkMode() {
       document.body.classList.toggle("dark-mode");
@@ -124,17 +103,17 @@
       let html = '<label for="type">Select Type:</label><select id="type"><option value="molarity">Molarity</option><option value="normality">Normality</option></select>';
 
       if (mode === "solid") {
-        html += '<label for="mw">Molecular Weight:</label><input type="number" id="mw" />';
-        html += '<label for="conc">Concentration (M or N):</label><input type="number" id="conc" />';
-        html += '<label for="vol">Volume (mL):</label><input type="number" id="vol" />';
+        html += '<label for="mw">Molecular Weight:</label><input type="number" id="mw" min="0.01" />';
+        html += '<label for="conc">Concentration (M or N):</label><input type="number" id="conc" min="0.001" />';
+        html += '<label for="vol">Volume:</label><input type="number" id="vol" min="0.01" /><select id="volUnit"><option value="ml">mL</option><option value="l">L</option></select>';
         html += '<div id="eqDiv"></div>';
         document.getElementById('inputArea').innerHTML = html;
         document.getElementById('type').addEventListener('change', showEqField);
         showEqField();
       } else {
-        html += '<label for="stockConc">Stock Concentration (M or N):</label><input type="number" id="stockConc" />';
-        html += '<label for="reqConc">Required Concentration (M or N):</label><input type="number" id="reqConc" />';
-        html += '<label for="vol">Final Volume (mL):</label><input type="number" id="vol" />';
+        html += '<label for="stockConc">Stock Concentration (M or N):</label><input type="number" id="stockConc" min="0.01" />';
+        html += '<label for="reqConc">Required Concentration (M or N):</label><input type="number" id="reqConc" min="0.01" />';
+        html += '<label for="vol">Final Volume:</label><input type="number" id="vol" min="0.01" /><select id="volUnit"><option value="ml">mL</option><option value="l">L</option></select>';
         html += '<div id="eqDiv"></div>';
         document.getElementById('inputArea').innerHTML = html;
         document.getElementById('type').addEventListener('change', showEqFieldLiquid);
@@ -145,29 +124,43 @@
     function showEqField() {
       const type = document.getElementById('type').value;
       const eqDiv = document.getElementById('eqDiv');
-      eqDiv.innerHTML = type === 'normality' ? '<label for="eq">Equivalence Factor:</label><input type="number" id="eq" />' : '';
+      eqDiv.innerHTML = type === 'normality' ? '<label for="eq">Equivalence Factor:</label><input type="number" id="eq" min="0.01"/>' : '';
     }
 
     function showEqFieldLiquid() {
       const type = document.getElementById('type').value;
       const eqDiv = document.getElementById('eqDiv');
-      eqDiv.innerHTML = type === 'normality' ? '<label for="eq">Equivalence Factor:</label><input type="number" id="eq" />' : '';
+      eqDiv.innerHTML = type === 'normality' ? '<label for="eq">Equivalence Factor:</label><input type="number" id="eq" min="0.01"/>' : '';
     }
 
     function calculate() {
       const mode = document.getElementById('mode').value;
       const type = document.getElementById('type').value;
+      const volUnit = document.getElementById('volUnit').value;
       let result = '';
+
+      function toLiters(vol, unit) {
+        return unit === 'ml' ? vol / 1000 : vol;
+      }
 
       if (mode === 'solid') {
         const mw = parseFloat(document.getElementById('mw').value);
         const conc = parseFloat(document.getElementById('conc').value);
-        const vol = parseFloat(document.getElementById('vol').value) / 1000;
+        const vol = toLiters(parseFloat(document.getElementById('vol').value), volUnit);
+
+        if (isNaN(mw) || isNaN(conc) || isNaN(vol) || mw <= 0 || conc <= 0 || vol <= 0) {
+          document.getElementById('result').innerText = 'Please enter valid values for all inputs.';
+          return;
+        }
 
         if (type === 'molarity') {
           result = mw * conc * vol;
         } else {
           const eq = parseFloat(document.getElementById('eq').value);
+          if (isNaN(eq) || eq <= 0) {
+            document.getElementById('result').innerText = 'Please enter a valid equivalence factor.';
+            return;
+          }
           result = mw * conc * vol / eq;
         }
         document.getElementById('result').innerText = `Weight required: ${result.toFixed(4)} grams`;
@@ -175,11 +168,22 @@
         const stock = parseFloat(document.getElementById('stockConc').value);
         const req = parseFloat(document.getElementById('reqConc').value);
         const vol = parseFloat(document.getElementById('vol').value);
-
+        const eqInput = document.getElementById('eq');
         let eq = 1;
-        if (type === 'normality') {
-          eq = parseFloat(document.getElementById('eq').value);
+
+        if (isNaN(stock) || isNaN(req) || isNaN(vol) || stock <= 0 || req <= 0 || vol <= 0) {
+          document.getElementById('result').innerText = 'Please enter valid values for all inputs.';
+          return;
         }
+
+        if (type === 'normality') {
+          eq = parseFloat(eqInput.value);
+          if (isNaN(eq) || eq <= 0) {
+            document.getElementById('result').innerText = 'Please enter a valid equivalence factor.';
+            return;
+          }
+        }
+
         const volStock = (req * vol) / (stock * eq);
         document.getElementById('result').innerText = `Volume of stock required: ${volStock.toFixed(2)} mL`;
       }
