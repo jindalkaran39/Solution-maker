@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -8,188 +7,200 @@
   <style>
     body {
       font-family: Arial, sans-serif;
-      background: #f0f4f8;
-      margin: 0;
+      background-color: #f4f4f4;
+      color: #333;
       padding: 20px;
-    }
-    .container {
-      background: #ffffff;
-      padding: 20px;
-      max-width: 600px;
-      margin: auto;
-      border-radius: 8px;
-      box-shadow: 0 0 10px rgba(0,0,0,0.1);
-    }
-    input, select {
-      width: 100%;
-      padding: 8px;
-      margin: 10px 0;
-      border: 1px solid #ccc;
-      border-radius: 4px;
-    }
-    button {
-      background: #007BFF;
-      color: white;
-      border: none;
-      padding: 10px 20px;
-      border-radius: 4px;
-      cursor: pointer;
-      font-size: 16px;
-    }
-    button:hover {
-      background: #0056b3;
-    }
-    .result {
-      margin-top: 20px;
-      font-weight: bold;
+      transition: background-color 0.3s, color 0.3s;
     }
     .dark-mode {
-      background: #1e1e1e;
-      color: #f0f0f0;
+      background-color: #121212;
+      color: #f4f4f4;
     }
-    .dark-mode .container {
-      background: #2b2b2b;
-      box-shadow: 0 0 20px rgba(255, 255, 255, 0.1);
+    .container {
+      max-width: 500px;
+      margin: auto;
+      background: #fff;
+      padding: 20px;
+      border-radius: 12px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
     }
-    .dark-mode input, .dark-mode select {
-      background-color: #3b3b3b;
-      color: #f0f0f0;
-      border: 1px solid #555;
+    h1 {
+      text-align: center;
     }
-    .dark-mode button {
-      background: #0056b3;
+    input, select, button {
+      width: 100%;
+      margin: 10px 0;
+      padding: 10px;
+      border-radius: 8px;
+      border: 1px solid #ccc;
     }
-    .dark-mode .result {
-      color: #90ee90;
+    .watermark {
+      text-align: center;
+      font-size: 12px;
+      margin-top: 10px;
+      color: #888;
+    }
+    .dark-toggle {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      background: #333;
+      color: white;
+      border: none;
+      border-radius: 50%;
+      width: 35px;
+      height: 35px;
+      cursor: pointer;
+      font-size: 18px;
+    }
+    .examples {
+      margin-top: 30px;
+      padding: 10px;
+      border-top: 1px solid #ccc;
+    }
+    .examples p {
+      font-size: 14px;
+      line-height: 1.5;
     }
   </style>
 </head>
 <body>
-  <button onclick="toggleDarkMode()" style="
-    position: fixed;
-    top: 20px;
-    right: 20px;
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    border: none;
-    background: #333;
-    color: #fff;
-    font-size: 20px;
-    cursor: pointer;
-    box-shadow: 0 4px 10px rgba(0,0,0,0.2);
-  " title="Toggle Dark Mode">&#9790;</button>
-
+  <button class="dark-toggle" onclick="toggleDarkMode()">☾</button>
   <div class="container">
-    <h2>Solution Calculator</h2>
-    <label for="mode">Choose Mode:</label>
-    <select id="mode" onchange="renderInputs()">
-      <option value="solid">Solid to Liquid</option>
-      <option value="liquid">Liquid to Liquid</option>
+    <h1>Solution Calculator</h1>
+    <label for="mode">Select calculation type:</label>
+    <select id="mode" onchange="updateMode()">
+      <option value="solid">Solid to Solution</option>
+      <option value="liquid">Liquid to Solution</option>
     </select>
 
-    <div id="inputArea"></div>
+    <div id="solidInputs">
+      <label>Enter molecular weight:</label>
+      <input type="number" id="molWeight" step="any" placeholder="e.g. 40 for NaOH" />
+
+      <label>Select type:</label>
+      <select id="solidType">
+        <option value="molarity">Molarity</option>
+        <option value="normality">Normality</option>
+      </select>
+
+      <label>Enter desired concentration (e.g. 0.1 for M/10):</label>
+      <input type="number" id="solidConcentration" step="any" />
+
+      <label>Enter volume required (ml):</label>
+      <input type="number" id="solidVolume" step="any" />
+
+      <div id="solidEqFactorInput">
+        <label>Enter equivalence factor:</label>
+        <input type="number" id="solidEqFactor" step="any" />
+      </div>
+    </div>
+
+    <div id="liquidInputs" style="display: none;">
+      <label>Select type:</label>
+      <select id="liquidType">
+        <option value="molarity">Molarity</option>
+        <option value="normality">Normality</option>
+      </select>
+
+      <label>Enter stock concentration:</label>
+      <input type="number" id="stockConc" step="any" placeholder="e.g. 35 for H₂SO₄" />
+
+      <label>Enter required concentration (e.g. 0.1 for N/10):</label>
+      <input type="number" id="requiredConc" step="any" />
+
+      <label>Enter volume required (ml):</label>
+      <input type="number" id="liquidVolume" step="any" />
+
+      <div id="liquidEqFactorInput">
+        <label>Enter equivalence factor:</label>
+        <input type="number" id="liquidEqFactor" step="any" />
+      </div>
+    </div>
+
     <button onclick="calculate()">Calculate</button>
-    <div class="result" id="result"></div>
+    <h2 id="result"></h2>
+
+    <div class="examples">
+      <p><strong>Examples:</strong></p>
+      <p><strong>Solid Example:</strong> To prepare M/10 NaOH solution:  
+      - Molecular weight = 40  
+      - Type = Molarity  
+      - Desired concentration = 0.1  
+      - Volume = 100 ml</p>
+
+      <p><strong>Liquid Example:</strong> To prepare N/10 H₂SO₄ solution using stock (35N):  
+      - Type = Normality  
+      - Stock concentration = 35  
+      - Desired concentration = 0.1  
+      - Volume = 100 ml  
+      - Equivalence factor = 2</p>
+    </div>
+
+    <div class="watermark">by Karan</div>
   </div>
 
   <script>
     function toggleDarkMode() {
-      document.body.classList.toggle("dark-mode");
+      document.body.classList.toggle('dark-mode');
     }
 
-    function renderInputs() {
-      const mode = document.getElementById('mode').value;
-      let html = '<label for="type">Select Type:</label><select id="type"><option value="molarity">Molarity</option><option value="normality">Normality</option></select>';
-
-      if (mode === "solid") {
-        html += '<label for="mw">Molecular Weight:</label><input type="number" id="mw" min="0.01" />';
-        html += '<label for="conc">Concentration (M or N):</label><input type="number" id="conc" min="0.001" />';
-        html += '<label for="vol">Volume:</label><input type="number" id="vol" min="0.01" /><select id="volUnit"><option value="ml">mL</option><option value="l">L</option></select>';
-        html += '<div id="eqDiv"></div>';
-        document.getElementById('inputArea').innerHTML = html;
-        document.getElementById('type').addEventListener('change', showEqField);
-        showEqField();
-      } else {
-        html += '<label for="stockConc">Stock Concentration (M or N):</label><input type="number" id="stockConc" min="0.01" />';
-        html += '<label for="reqConc">Required Concentration (M or N):</label><input type="number" id="reqConc" min="0.01" />';
-        html += '<label for="vol">Final Volume:</label><input type="number" id="vol" min="0.01" /><select id="volUnit"><option value="ml">mL</option><option value="l">L</option></select>';
-        html += '<div id="eqDiv"></div>';
-        document.getElementById('inputArea').innerHTML = html;
-        document.getElementById('type').addEventListener('change', showEqFieldLiquid);
-        showEqFieldLiquid();
-      }
-    }
-
-    function showEqField() {
-      const type = document.getElementById('type').value;
-      const eqDiv = document.getElementById('eqDiv');
-      eqDiv.innerHTML = type === 'normality' ? '<label for="eq">Equivalence Factor:</label><input type="number" id="eq" min="0.01"/>' : '';
-    }
-
-    function showEqFieldLiquid() {
-      const type = document.getElementById('type').value;
-      const eqDiv = document.getElementById('eqDiv');
-      eqDiv.innerHTML = type === 'normality' ? '<label for="eq">Equivalence Factor:</label><input type="number" id="eq" min="0.01"/>' : '';
+    function updateMode() {
+      const mode = document.getElementById("mode").value;
+      document.getElementById("solidInputs").style.display = mode === "solid" ? "block" : "none";
+      document.getElementById("liquidInputs").style.display = mode === "liquid" ? "block" : "none";
     }
 
     function calculate() {
-      const mode = document.getElementById('mode').value;
-      const type = document.getElementById('type').value;
-      const volUnit = document.getElementById('volUnit').value;
-      let result = '';
+      const mode = document.getElementById("mode").value;
 
-      function toLiters(vol, unit) {
-        return unit === 'ml' ? vol / 1000 : vol;
-      }
+      if (mode === "solid") {
+        const molWeight = parseFloat(document.getElementById("molWeight").value);
+        const type = document.getElementById("solidType").value;
+        const conc = parseFloat(document.getElementById("solidConcentration").value);
+        const vol = parseFloat(document.getElementById("solidVolume").value);
+        const eqFactor = parseFloat(document.getElementById("solidEqFactor").value);
 
-      if (mode === 'solid') {
-        const mw = parseFloat(document.getElementById('mw').value);
-        const conc = parseFloat(document.getElementById('conc').value);
-        const vol = toLiters(parseFloat(document.getElementById('vol').value), volUnit);
-
-        if (isNaN(mw) || isNaN(conc) || isNaN(vol) || mw <= 0 || conc <= 0 || vol <= 0) {
-          document.getElementById('result').innerText = 'Please enter valid values for all inputs.';
-          return;
-        }
-
-        if (type === 'molarity') {
-          result = mw * conc * vol;
+        if (type === "normality") {
+          result = (conc * vol * molWeight) / (1000 * eqFactor);
         } else {
-          const eq = parseFloat(document.getElementById('eq').value);
-          if (isNaN(eq) || eq <= 0) {
-            document.getElementById('result').innerText = 'Please enter a valid equivalence factor.';
-            return;
-          }
-          result = mw * conc * vol / eq;
+          result = (conc * vol * molWeight) / 1000;
         }
-        document.getElementById('result').innerText = `Weight required: ${result.toFixed(4)} grams`;
+
+        document.getElementById("result").innerText = `Weight to be dissolved: ${result.toFixed(3)} grams`;
       } else {
-        const stock = parseFloat(document.getElementById('stockConc').value);
-        const req = parseFloat(document.getElementById('reqConc').value);
-        const vol = parseFloat(document.getElementById('vol').value);
-        const eqInput = document.getElementById('eq');
-        let eq = 1;
+        const type = document.getElementById("liquidType").value;
+        const stockConc = parseFloat(document.getElementById("stockConc").value);
+        const reqConc = parseFloat(document.getElementById("requiredConc").value);
+        const vol = parseFloat(document.getElementById("liquidVolume").value);
+        const eqFactor = parseFloat(document.getElementById("liquidEqFactor").value);
 
-        if (isNaN(stock) || isNaN(req) || isNaN(vol) || stock <= 0 || req <= 0 || vol <= 0) {
-          document.getElementById('result').innerText = 'Please enter valid values for all inputs.';
-          return;
+        let dilution;
+        if (type === "normality") {
+          dilution = (reqConc * vol) / (stockConc * eqFactor);
+        } else {
+          dilution = (reqConc * vol) / stockConc;
         }
 
-        if (type === 'normality') {
-          eq = parseFloat(eqInput.value);
-          if (isNaN(eq) || eq <= 0) {
-            document.getElementById('result').innerText = 'Please enter a valid equivalence factor.';
-            return;
-          }
-        }
-
-        const volStock = (req * vol) / (stock * eq);
-        document.getElementById('result').innerText = `Volume of stock required: ${volStock.toFixed(2)} mL`;
+        document.getElementById("result").innerText = `Volume of stock to use: ${dilution.toFixed(3)} ml`;
       }
     }
 
-    window.onload = renderInputs;
+    // Show/hide eq factor for normality type
+    document.getElementById("solidType").addEventListener("change", () => {
+      const show = document.getElementById("solidType").value === "normality";
+      document.getElementById("solidEqFactorInput").style.display = show ? "block" : "none";
+    });
+
+    document.getElementById("liquidType").addEventListener("change", () => {
+      const show = document.getElementById("liquidType").value === "normality";
+      document.getElementById("liquidEqFactorInput").style.display = show ? "block" : "none";
+    });
+
+    // Initialize visibility
+    updateMode();
+    document.getElementById("solidType").dispatchEvent(new Event("change"));
+    document.getElementById("liquidType").dispatchEvent(new Event("change"));
   </script>
 </body>
 </html>
